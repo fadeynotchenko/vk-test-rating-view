@@ -25,6 +25,9 @@ final class ReviewsViewController: UIViewController {
         viewModel.getReviews()
     }
 
+    deinit {
+        print("\(#file) deinit")
+    }
 }
 
 // MARK: - Private

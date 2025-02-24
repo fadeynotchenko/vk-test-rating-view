@@ -41,7 +41,6 @@ extension ReviewCellConfig: TableCellConfig {
     func height(with size: CGSize) -> CGFloat {
         layout.height(config: self, maxWidth: size.width)
     }
-
 }
 
 // MARK: - Private
@@ -106,8 +105,16 @@ private extension ReviewCell {
         contentView.addSubview(showMoreButton)
         showMoreButton.contentVerticalAlignment = .fill
         showMoreButton.setAttributedTitle(Config.showMoreText, for: .normal)
+        
+        /// экшн кнопки "Показать полностью"
+        let action = UIAction { [weak self] _ in
+            guard let self = self, let config = self.config else { return }
+            
+            config.onTapShowMore(config.id)
+        }
+        showMoreButton.addAction(action, for: .touchUpInside)
     }
-
+    
 }
 
 // MARK: - Layout
