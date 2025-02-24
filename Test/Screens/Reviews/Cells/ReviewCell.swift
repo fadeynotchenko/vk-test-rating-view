@@ -8,18 +8,22 @@ struct ReviewCellConfig {
 
     /// Идентификатор конфигурации. Можно использовать для поиска конфигурации в массиве.
     let id = UUID()
+    /// Имя и фамилия пользователя
+    let username: NSAttributedString
     /// Текст отзыва.
     let reviewText: NSAttributedString
     /// Максимальное отображаемое количество строк текста. По умолчанию 3.
     var maxLines = 3
     /// Время создания отзыва.
     let created: NSAttributedString
+    /// Рейтинг от 1 до 5
+    let ratingImage: UIImage
     /// Замыкание, вызываемое при нажатии на кнопку "Показать полностью...".
     let onTapShowMore: (UUID) -> Void
 
     /// Объект, хранящий посчитанные фреймы для ячейки отзыва.
     fileprivate let layout = ReviewCellLayout()
-
+    
 }
 
 // MARK: - TableCellConfig
@@ -30,9 +34,11 @@ extension ReviewCellConfig: TableCellConfig {
     /// Вызывается из `cellForRowAt:` у `dataSource` таблицы.
     func update(cell: UITableViewCell) {
         guard let cell = cell as? ReviewCell else { return }
+        cell.usernameTextLabel.attributedText = username
         cell.reviewTextLabel.attributedText = reviewText
         cell.reviewTextLabel.numberOfLines = maxLines
         cell.createdLabel.attributedText = created
+        cell.ratingImageView.image = ratingImage
         cell.config = self
     }
 
@@ -59,9 +65,11 @@ final class ReviewCell: UITableViewCell {
 
     fileprivate var config: Config?
 
+    fileprivate let usernameTextLabel = UILabel()
     fileprivate let reviewTextLabel = UILabel()
     fileprivate let createdLabel = UILabel()
     fileprivate let showMoreButton = UIButton()
+    fileprivate let ratingImageView = UIImageView()
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -75,6 +83,9 @@ final class ReviewCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         guard let layout = config?.layout else { return }
+        
+        usernameTextLabel.frame = layout.usernameTextLabelFrame
+        ratingImageView.frame = layout.ratingImageViewFrame
         reviewTextLabel.frame = layout.reviewTextLabelFrame
         createdLabel.frame = layout.createdLabelFrame
         showMoreButton.frame = layout.showMoreButtonFrame
@@ -87,9 +98,19 @@ final class ReviewCell: UITableViewCell {
 private extension ReviewCell {
 
     func setupCell() {
+        setupUsernameTextLabel()
+        setupRatingImageView()
         setupReviewTextLabel()
         setupCreatedLabel()
         setupShowMoreButton()
+    }
+    
+    func setupUsernameTextLabel() {
+        contentView.addSubview(usernameTextLabel)
+    }
+    
+    func setupRatingImageView() {
+        contentView.addSubview(ratingImageView)
     }
 
     func setupReviewTextLabel() {
@@ -134,9 +155,11 @@ private final class ReviewCellLayout {
 
     // MARK: - Фреймы
 
+    private(set) var usernameTextLabelFrame = CGRect.zero
     private(set) var reviewTextLabelFrame = CGRect.zero
     private(set) var showMoreButtonFrame = CGRect.zero
     private(set) var createdLabelFrame = CGRect.zero
+    private(set) var ratingImageViewFrame = CGRect.zero
 
     // MARK: - Отступы
 
@@ -168,7 +191,22 @@ private final class ReviewCellLayout {
 
         var maxY = insets.top
         var showShowMoreButton = false
-
+        
+        // Имя пользователя
+        usernameTextLabelFrame = CGRect(
+            origin: CGPoint(x: insets.left, y: maxY),
+            size: config.username.boundingRect(width: width).size
+        )
+        
+        maxY = usernameTextLabelFrame.maxY + usernameToRatingSpacing
+        
+        // Рейтинг
+        ratingImageViewFrame = CGRect(
+            origin: CGPoint(x: insets.left, y: maxY),
+            size: config.ratingImage.size
+        )
+        maxY = ratingImageViewFrame.maxY + ratingToTextSpacing
+        
         if !config.reviewText.isEmpty() {
             // Высота текста с текущим ограничением по количеству строк.
             let currentTextHeight = (config.reviewText.font()?.lineHeight ?? .zero) * CGFloat(config.maxLines)
