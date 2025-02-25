@@ -9,17 +9,20 @@ final class ReviewsViewModel: NSObject {
     private var state: State
     private let reviewsProvider: ReviewsProvider
     private let ratingRenderer: RatingRenderer
+    private let avatarRenderer: AvatarRenderer
     private let decoder: JSONDecoder
 
     init(
         state: State = State(),
         reviewsProvider: ReviewsProvider = ReviewsProvider(),
         ratingRenderer: RatingRenderer = RatingRenderer(),
+        avatarRenderer: AvatarRenderer = AvatarRenderer(),
         decoder: JSONDecoder = JSONDecoder()
     ) {
         self.state = state
         self.reviewsProvider = reviewsProvider
         self.ratingRenderer = ratingRenderer
+        self.avatarRenderer = avatarRenderer
         self.decoder = decoder
     }
 
@@ -86,12 +89,14 @@ private extension ReviewsViewModel {
         let reviewText = review.text.attributed(font: .text)
         let created = review.created.attributed(font: .created, color: .created)
         let ratingImage = ratingRenderer.ratingImage(Int(review.rating))
+        let avatarImage = avatarRenderer.renderImage()
         
         let item = ReviewItem(
             username: username,
             reviewText: reviewText,
             created: created,
             ratingImage: ratingImage,
+            avatarImage: avatarImage,
             onTapShowMore: showMoreReview
         )
         return item
