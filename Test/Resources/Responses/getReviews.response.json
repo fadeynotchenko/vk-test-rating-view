@@ -7,14 +7,14 @@
             "rating": 5,
             "text": "Кроссовки хорошие. Удобные. Как по мне сшиты.",
             "created": "1 час назад",
-            "avatarUrl": "https://avatars.mds.yandex.net/i?id=3e4905a65f46b07b22deb5b4b37efb4c_l-5547244-images-thumbs&n=13"
+            "avatarUrl": "https://i.pinimg.com/originals/da/31/68/da3168f8adbddb7e9256f8142494c32a.jpg"
         },
         {
             "first_name": "Екатерина",
             "last_name": "Иванова",
             "rating": 3,
             "text": "Скользские ужасно.",
-            "created": "12 минут назад"
+            "created": "12 минут назад",
         },
         {
             "first_name": "Евгения",
@@ -29,7 +29,8 @@
             "last_name": "Петров",
             "rating": 2,
             "text": "Понравилось отношение - несмотря на то, что заказ был выполнен не идеально, продавец был очень любезен и шёл... Прошла по снегу 30 метров, 5 раз упала. Спасибо мужу, поддерживал. Возврат, к сожалению.",
-            "created": "минуту назад"
+            "created": "минуту назад",
+            "avatarUrl": "https://kulturologia.ru/files/u18214/MartinSchoeller_30.jpg"
         },
         {
             "first_name": "Никита",
@@ -50,23 +51,24 @@
             "last_name": "Петров",
             "rating": 2,
             "text": "",
-            "created": "вчера в 12:39"
+            "created": "вчера в 12:39",
+            "avatarUrl": "https://cdn.culture.ru/images/205e6ee9-efb6-5558-84db-92734003b5d3"
         },
-
-
         {
             "first_name": "Иван",
             "last_name": "Петров",
             "rating": 5,
             "text": "Кроссовки хорошие. Удобные. Как по мне сшиты.",
-            "created": "1 час назад"
+            "created": "1 час назад",
+            "avatarUrl": "https://i.pinimg.com/originals/4f/5d/65/4f5d656098f2020064863afd2a833185.jpg"
         },
         {
             "first_name": "Екатерина",
             "last_name": "Иванова",
             "rating": 3,
             "text": "Скользские ужасно.",
-            "created": "12 минут назад"
+            "created": "12 минут назад",
+            "avatarUrl": "https://i.pinimg.com/originals/da/31/68/da3168f8adbddb7e9256f8142494c32a.jpg"
         },
         {
             "first_name": "Евгения",
@@ -94,7 +96,8 @@
             "last_name": "Николаев",
             "rating": 1,
             "text": "Ребёнок жалуется, что очень скользские. Пока шла до школы...",
-            "created": "15 минут назад"
+            "created": "15 минут назад",
+            "avatarUrl": "https://i.pinimg.com/originals/da/31/68/da3168f8adbddb7e9256f8142494c32a.jpg"
         },
         {
             "first_name": "Николай",
@@ -110,14 +113,16 @@
             "last_name": "Петров",
             "rating": 5,
             "text": "Кроссовки хорошие. Удобные. Как по мне сшиты.",
-            "created": "1 час назад"
+            "created": "1 час назад",
+            "avatarUrl": "https://cdn.culture.ru/images/205e6ee9-efb6-5558-84db-92734003b5d3"
         },
         {
             "first_name": "Екатерина",
             "last_name": "Иванова",
             "rating": 3,
             "text": "Скользские ужасно.",
-            "created": "12 минут назад"
+            "created": "12 минут назад",
+            "avatarUrl": "https://i.pinimg.com/originals/4f/5d/65/4f5d656098f2020064863afd2a833185.jpg"
         },
         {
             "first_name": "Евгения",
@@ -145,7 +150,8 @@
             "last_name": "Николаев",
             "rating": 1,
             "text": "Ребёнок жалуется, что очень скользские. Пока шла до школы...",
-            "created": "15 минут назад"
+            "created": "15 минут назад",
+            "avatarUrl": "https://cdn.culture.ru/images/205e6ee9-efb6-5558-84db-92734003b5d3"
         },
         {
             "first_name": "Николай",

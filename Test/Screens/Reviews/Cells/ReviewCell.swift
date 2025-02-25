@@ -210,7 +210,7 @@ private final class ReviewCellLayout {
         // Аватар пользователя
         avatarImageViewFrame = CGRect(
             origin: CGPoint(x: insets.left, y: maxY),
-            size: AvatarRendererConfig.default().size
+            size: config.avatarPlaceholder?.size ?? .zero
         )
         
         let width = maxWidth - insets.left - insets.right - avatarImageViewFrame.width - avatarToUsernameSpacing

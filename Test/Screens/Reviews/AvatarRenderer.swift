@@ -7,130 +7,185 @@
 
 import UIKit
 
-// MARK: - Image Cache
-
-final class ImageCache {
-    static let shared = ImageCache()
-    private let cache = NSCache<NSString, UIImage>()
-
-    private init() {}
-
-    func setImage(_ image: UIImage, forKey key: String) {
-        cache.setObject(image, forKey: key as NSString)
-    }
-
-    func getImage(forKey key: String) -> UIImage? {
-        return cache.object(forKey: key as NSString)
-    }
-
-    func clearCache() {
-        cache.removeAllObjects()
-    }
-}
+//
+//  AvatarRenderer.swift
+//  Test
+//
+//  Created by Fadey Notchenko on 25.02.2025.
+//
 
 // MARK: - AvatarRendererConfig
 
 struct AvatarRendererConfig {
+    
     let placeholderImageName: String
     let size: CGSize
+    
 }
 
 // MARK: - Internal
 
 extension AvatarRendererConfig {
+    
     static func `default`() -> Self {
         return AvatarRendererConfig(
             placeholderImageName: "defaultAvatar",
             size: CGSize(width: 40.0, height: 40.0)
         )
     }
+    
 }
 
 // MARK: - Renderer
 
-/// Класс рисует изображение из URL или ассетов с круглой маской.
 final class AvatarRenderer {
+    
     private let config: AvatarRendererConfig
     private let imageRenderer: UIGraphicsImageRenderer
-
-    init(config: AvatarRendererConfig, imageRenderer: UIGraphicsImageRenderer) {
+    private let urlSession: URLSession
+    private var tasks: [String: URLSessionDataTask] = [:]
+    
+    init(config: AvatarRendererConfig = .default(), urlSession: URLSession = .shared) {
         self.config = config
-        self.imageRenderer = imageRenderer
-    }
-}
-
-// MARK: - Internal
-
-extension AvatarRenderer {
-    convenience init(config: AvatarRendererConfig = .default()) {
-        let imageRenderer = UIGraphicsImageRenderer(size: config.size)
-        self.init(config: config, imageRenderer: imageRenderer)
+        self.imageRenderer = UIGraphicsImageRenderer(size: config.size)
+        self.urlSession = urlSession
     }
     
+}
+
+// MARK: - Public Methods
+
+extension AvatarRenderer {
     func getDefaultImage() -> UIImage? {
+        let cacheKey = assetCacheKey(for: config.placeholderImageName)
+        
+        if let cachedImage = ImageCache.shared.getImage(forKey: cacheKey) {
+            return cachedImage
+        }
+        
         return drawImage(fromAsset: config.placeholderImageName)
     }
-
-    /// Асинхронно загружает и рендерит изображение.
-    /// completion: Замыкание, которое вызывается с результатом (UIImage?).
+    
     func renderImage(url: String?, completion: @escaping (UIImage?) -> Void) {
-        guard let url = url, let imageURL = URL(string: url) else {
-            let placeholderImage = drawImage(fromAsset: config.placeholderImageName)
-            completion(placeholderImage)
+        guard let urlString = url, let url = URL(string: urlString) else {
+            completion(getDefaultImage())
+            
             return
         }
-
-        let cacheKey = imageURL.absoluteString as NSString
-
-        if let cachedImage = ImageCache.shared.getImage(forKey: cacheKey as String) {
+        
+        let cacheKey = url.absoluteString
+        
+        if let cachedImage = ImageCache.shared.getImage(forKey: cacheKey) {
             completion(cachedImage)
+            
             return
         }
-
-        // Загрузка изображения из URL
-        DispatchQueue.global(qos: .userInitiated).async {
-            if let data = try? Data(contentsOf: imageURL), let downloadedImage = UIImage(data: data) {
-                let renderedImage = self.drawImage(from: downloadedImage)
-
-                // Сохраняем в кэш
-                ImageCache.shared.setImage(renderedImage, forKey: cacheKey as String)
-
-                DispatchQueue.main.async {
-                    completion(renderedImage)
-                }
-            } else {
-                // Если загрузка не удалась, используем плейсхолдер
-                let placeholderImage = self.drawImage(fromAsset: self.config.placeholderImageName)
-                DispatchQueue.main.async {
-                    completion(placeholderImage)
-                }
+        
+        let task = urlSession.dataTask(with: url) { [weak self] data, response, error in
+            guard let self else { return }
+            
+            defer { self.tasks.removeValue(forKey: cacheKey) }
+            
+            if self.handleNetworkError(error: error, response: response, completion: completion) {
+                return
+            }
+            
+            guard let data = data, let image = UIImage(data: data) else {
+                self.loadFallbackImage(completion: completion)
+                
+                return
+            }
+            
+            let processedImage = self.drawImage(from: image)
+            ImageCache.shared.setImage(processedImage, forKey: cacheKey)
+            
+            DispatchQueue.main.async {
+                completion(processedImage)
             }
         }
+        
+        tasks[cacheKey] = task
+        
+        task.resume()
     }
 }
 
-// MARK: - Private
+// MARK: - Private Methods
 
 private extension AvatarRenderer {
-    /// Рендерит изображение из ассетов с круглой маской.
     func drawImage(fromAsset imageName: String) -> UIImage? {
-        guard let originalImage = UIImage(named: imageName) else {
-            return nil
+        let cacheKey = assetCacheKey(for: imageName)
+        
+        if let cachedImage = ImageCache.shared.getImage(forKey: cacheKey) {
+            return cachedImage
         }
-
-        return imageRenderer.image { context in
+        
+        guard let originalImage = UIImage(named: imageName) else { return nil }
+        
+        let image = imageRenderer.image { context in
             let path = UIBezierPath(ovalIn: CGRect(origin: .zero, size: config.size))
             path.addClip()
             originalImage.draw(in: CGRect(origin: .zero, size: config.size))
         }
+        
+        ImageCache.shared.setImage(image, forKey: cacheKey)
+        
+        return image
     }
-
-    /// Рендерит изображение из загруженного UIImage с круглой маской.
+    
     func drawImage(from image: UIImage) -> UIImage {
-        return imageRenderer.image { context in
+        imageRenderer.image { context in
             let path = UIBezierPath(ovalIn: CGRect(origin: .zero, size: config.size))
             path.addClip()
-            image.draw(in: CGRect(origin: .zero, size: config.size))
+            
+            let imageSize = image.size
+            let targetSize = config.size
+            let widthRatio = targetSize.width / imageSize.width
+            let heightRatio = targetSize.height / imageSize.height
+            let scaleFactor = max(widthRatio, heightRatio)
+            
+            let scaledSize = CGSize(
+                width: imageSize.width * scaleFactor,
+                height: imageSize.height * scaleFactor
+            )
+            let origin = CGPoint(
+                x: (targetSize.width - scaledSize.width) / 2,
+                y: (targetSize.height - scaledSize.height) / 2
+            )
+            
+            image.draw(in: CGRect(origin: origin, size: scaledSize))
         }
+    }
+    
+    func handleNetworkError(error: Error?, response: URLResponse?, completion: @escaping (UIImage?) -> Void) -> Bool {
+        if let error = error {
+            print("Image load error: \(error.localizedDescription)")
+            
+            loadFallbackImage(completion: completion)
+            
+            return true
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            print("Invalid server response")
+            
+            loadFallbackImage(completion: completion)
+            
+            return true
+        }
+        
+        return false
+    }
+    
+    func loadFallbackImage(completion: @escaping (UIImage?) -> Void) {
+        let fallbackImage = getDefaultImage()
+        
+        DispatchQueue.main.async {
+            completion(fallbackImage)
+        }
+    }
+    
+    func assetCacheKey(for imageName: String) -> String {
+        "asset_\(imageName)"
     }
 }
