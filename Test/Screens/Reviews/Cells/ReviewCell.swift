@@ -18,8 +18,10 @@ struct ReviewCellConfig {
     let created: NSAttributedString
     /// Рейтинг от 1 до 5
     let ratingImage: UIImage
-    /// Аватар пользователя
-    let avatarImage: UIImage?
+    /// Плейсхолдер изображение
+    let avatarPlaceholder: UIImage?
+    /// Замыкание, вызываемое для загрузки изображение
+    let loadAvatar: (@escaping (UIImage?) -> Void) -> Void
     /// Замыкание, вызываемое при нажатии на кнопку "Показать полностью...".
     let onTapShowMore: (UUID) -> Void
 
@@ -37,7 +39,10 @@ extension ReviewCellConfig: TableCellConfig {
     func update(cell: UITableViewCell) {
         guard let cell = cell as? ReviewCell else { return }
         
-        cell.avatarImageView.image = avatarImage
+        cell.avatarImageView.image = avatarPlaceholder
+        loadAvatar { image in
+            cell.avatarImageView.image = image
+        }
         cell.usernameTextLabel.attributedText = username
         cell.reviewTextLabel.attributedText = reviewText
         cell.reviewTextLabel.numberOfLines = maxLines
@@ -205,7 +210,7 @@ private final class ReviewCellLayout {
         // Аватар пользователя
         avatarImageViewFrame = CGRect(
             origin: CGPoint(x: insets.left, y: maxY),
-            size: config.avatarImage?.size ?? .zero
+            size: AvatarRendererConfig.default().size
         )
         
         let width = maxWidth - insets.left - insets.right - avatarImageViewFrame.width - avatarToUsernameSpacing

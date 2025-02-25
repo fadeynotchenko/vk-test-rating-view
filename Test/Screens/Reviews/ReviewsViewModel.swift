@@ -88,15 +88,25 @@ private extension ReviewsViewModel {
         let username = fullName.attributed(font: .username)
         let reviewText = review.text.attributed(font: .text)
         let created = review.created.attributed(font: .created, color: .created)
+        
+        /// изображения
         let ratingImage = ratingRenderer.ratingImage(Int(review.rating))
-        let avatarImage = avatarRenderer.renderImage()
+        let avatarPlaceholder = avatarRenderer.getDefaultImage()
+        let loadAvatar: (@escaping (UIImage?) -> Void) -> Void = { [weak self] completion in
+            guard let self = self else { return }
+            
+            self.avatarRenderer.renderImage(url: review.avatarUrl) { image in
+                completion(image)
+            }
+        }
         
         let item = ReviewItem(
             username: username,
             reviewText: reviewText,
             created: created,
             ratingImage: ratingImage,
-            avatarImage: avatarImage,
+            avatarPlaceholder: avatarPlaceholder,
+            loadAvatar: loadAvatar,
             onTapShowMore: showMoreReview
         )
         return item

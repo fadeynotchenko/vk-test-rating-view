@@ -11,6 +11,8 @@ struct Review: Decodable {
     let lastName: String
     /// Рейтинг (от 1 до 5).
     let rating: UInt8
+    /// URL аватарки
+    let avatarUrl: String?
     
 }
 
@@ -23,6 +25,7 @@ extension Review {
         case firstName = "first_name"
         case lastName = "last_name"
         case rating
+        case avatarUrl
     }
     
 }
