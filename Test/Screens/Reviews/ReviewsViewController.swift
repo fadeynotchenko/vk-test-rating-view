@@ -5,6 +5,7 @@ final class ReviewsViewController: UIViewController {
     private lazy var reviewsView = makeReviewsView()
     private let viewModel: ReviewsViewModel
     private let loadingLayer = CAShapeLayer()
+    private let refreshControl = UIRefreshControl()
 
     init(viewModel: ReviewsViewModel) {
         self.viewModel = viewModel
@@ -25,6 +26,7 @@ final class ReviewsViewController: UIViewController {
         
         setupViewModel()
         setupLoadingLayer()
+        setupRefreshControl()
         viewModel.getReviews()
     }
     
@@ -53,7 +55,13 @@ private extension ReviewsViewController {
         viewModel.onStateChange = { [weak self] state in
             guard let self = self else { return }
             
-            self.loadingLayer.isHidden = state.items.count > 0
+            DispatchQueue.main.async {
+                if !state.isRefreshing {
+                    self.refreshControl.endRefreshing()
+                }
+            }
+            
+            self.loadingLayer.isHidden = state.items.count > 0 || state.isRefreshing
             self.reviewsView.tableView.reloadData()
         }
     }
@@ -111,4 +119,12 @@ private extension ReviewsViewController {
         loadingLayer.add(loadingAnimationGroup, forKey: "loading")
     }
     
+    private func setupRefreshControl() {
+        refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        reviewsView.tableView.refreshControl = refreshControl
+    }
+    
+    @objc private func refreshData() {
+        viewModel.refreshReviews()
+    }
 }

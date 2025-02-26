@@ -40,7 +40,16 @@ extension ReviewsViewModel {
         state.shouldLoad = false
         reviewsProvider.getReviews(offset: state.offset, completion: gotReviews)
     }
-
+    
+    func refreshReviews() {
+        state.offset = 0
+        state.items = []
+        state.shouldLoad = true
+        state.isRefreshing = true
+        onStateChange?(state)
+        getReviews()
+    }
+    
 }
 
 // MARK: - Private
@@ -58,6 +67,7 @@ private extension ReviewsViewModel {
         } catch {
             state.shouldLoad = true
         }
+        state.isRefreshing = false
         onStateChange?(state)
     }
 
