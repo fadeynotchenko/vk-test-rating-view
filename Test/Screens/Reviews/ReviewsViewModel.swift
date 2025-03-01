@@ -61,9 +61,15 @@ private extension ReviewsViewModel {
         do {
             let data = try result.get()
             let reviews = try decoder.decode(Reviews.self, from: data)
+            let shoudLoad = state.offset < reviews.count
+            
             state.items += reviews.items.map(makeReviewItem)
             state.offset += state.limit
-            state.shouldLoad = state.offset < reviews.count
+            state.shouldLoad = shoudLoad
+            
+            if !shoudLoad {
+                state.items += [makeCountItem(reviews.count)]
+            }
         } catch {
             state.shouldLoad = true
         }
@@ -90,6 +96,7 @@ private extension ReviewsViewModel {
 private extension ReviewsViewModel {
 
     typealias ReviewItem = ReviewCellConfig
+    typealias CountItem = CountCellConfig
 
     func makeReviewItem(_ review: Review) -> ReviewItem {
         let fullName = review.firstName + " " + review.lastName
@@ -122,6 +129,13 @@ private extension ReviewsViewModel {
         return item
     }
 
+    func makeCountItem(_ count: Int) -> CountItem {
+        let count = "Отзывов: \(count)".attributed(font: .reviewCount, color: .reviewCount)
+        let item = CountItem(
+            count: count
+        )
+        return item
+    }
 }
 
 // MARK: - UITableViewDataSource

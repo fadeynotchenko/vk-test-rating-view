@@ -26,7 +26,7 @@ struct ReviewCellConfig {
     let onTapShowMore: (UUID) -> Void
 
     /// Объект, хранящий посчитанные фреймы для ячейки отзыва.
-    fileprivate let layout = ReviewCellLayout()
+    fileprivate let layout = Layout()
     
 }
 
